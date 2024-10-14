@@ -1,4 +1,4 @@
-version: '3.8'
+
 services: 
   backend:
     container_name: backend
@@ -7,8 +7,20 @@ services:
       - "80:80"
     volumes:
       - ./backend:/code
-    networks:
-      - dev
+    restart: always
+
+  embedder-reranker:
+    container_name: embedder-reranker-deploy
+    build: ./embedder-reranker
+    ports:
+      - "8080:8080"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     restart: always
 
   frontend:
@@ -20,8 +32,6 @@ services:
       - ./frontend:/frontend
     depends_on:
       - backend
-    networks:
-      - dev
     restart: always
 
   etcd:
@@ -97,6 +107,3 @@ services:
       - "minio"
       - "standalone"
       
-networks:
-    dev:
-      driver: bridge
